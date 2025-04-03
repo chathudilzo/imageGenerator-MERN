@@ -2,6 +2,10 @@
 
 # dependencies
 /node_modules
+/backend/node_modules
+/frontend/imageclient/node_modules
+/frontend/imageclient/.env
+/backend/.env
 /.pnp
 .pnp.js
 
