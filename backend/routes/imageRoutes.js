@@ -15,7 +15,7 @@ const openAi = new OpenAI({
 });
 
 const genAI = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI });
-router.post("/generate-image", authMiddleware, async (req, res) => {
+router.post("/generate-image", async (req, res) => {
   const { prompt } = req.body;
 
   try {
@@ -37,7 +37,7 @@ router.post("/generate-image", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/generate-genai", authMiddleware, async (req, res) => {
+router.post("/generate-genai", async (req, res) => {
   const { prompt } = req.body;
 
   try {

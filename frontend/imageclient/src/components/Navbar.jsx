@@ -3,6 +3,7 @@ import { TiThMenu } from "react-icons/ti";
 import { IoClose } from "react-icons/io5";
 import { useUser } from "../providers/UserProvider";
 import LoginRegisterPopup from "../components/LoginRegisterPopup";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [nav, setNav] = useState(false);
@@ -24,7 +25,7 @@ const Navbar = () => {
             <a>AI Image</a>
           </li>
           <li className="p-4 hover:text-teal-400 text-gray-300 ">
-            <a>AI Video</a>
+            <Link to="/video">Ai Video</Link>
           </li>
           <li className="p-4 hover:text-teal-400 text-gray-300 ">
             <a>AI Music</a>

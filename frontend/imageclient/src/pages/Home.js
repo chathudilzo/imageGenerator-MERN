@@ -59,7 +59,6 @@ const PromtSection = () => {
     setIsLoading(true);
     if (selectedEngine == 0) {
       if (prompt !== "") {
-        console.log("Using token:", token);
         try {
           let style = "";
           if (selectedStyle === 1) {
@@ -93,7 +92,6 @@ const PromtSection = () => {
       }
     } else if (selectedEngine == 1) {
       if (prompt !== "") {
-        console.log("Using token:", token);
         try {
           let style = "";
           if (selectedStyle === 1) {
@@ -127,7 +125,6 @@ const PromtSection = () => {
       }
     } else {
       if (prompt !== "") {
-        console.log("Using token:", token);
         try {
           let style = "";
           if (selectedStyle === 1) {
@@ -174,6 +171,17 @@ const PromtSection = () => {
   };
 
   const logo = "assets/logo.png";
+
+  const handleDownload = () => {
+    try {
+      const link = document.createElement("a");
+      link.href = generatedImage;
+      link.download = "generated-image.png";
+      link.click();
+    } catch (error) {
+      alert(error);
+    }
+  };
 
   return (
     <div className=" w-10/12 lg:max-w-4xl px-4 py-10 mx-auto border border-gray-700 bg-[#0d0613] text-white rounded-3xl shadow-lg mt-6 flex flex-col md:flex-row gap-6 ">
@@ -295,17 +303,25 @@ const PromtSection = () => {
           </div>
         </div>
       </div>
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center z-50">
         {isLoading ? (
           <div className="flex justify-center items-center space-x-2">
             <div className="w-8 h-8 border-4 border-t-transparent border-blue-500 border-solid rounded-full animate-spin"></div>
             <p className="text-lg">Loading...</p>
           </div>
         ) : (
-          <img
-            src={generatedImage || logo}
-            className="max-w-full max-h-80 rounded-md border border-gray-700 shadow"
-          />
+          <div>
+            <img
+              src={generatedImage || logo}
+              className="max-w-full max-h-80 rounded-md border border-gray-700 shadow"
+            />
+            <button
+              onClick={handleDownload}
+              className="z-50 mt-4 p-2 bg-blue-500 text-white rounded-md"
+            >
+              Download Image
+            </button>
+          </div>
         )}
       </div>
     </div>
