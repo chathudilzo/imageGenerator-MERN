@@ -22,7 +22,7 @@ const Navbar = () => {
         </div>
         <ul className="hidden md:flex items-center  z-50">
           <li className="p-4 hover:text-teal-400 text-gray-300 ">
-            <a>AI Image</a>
+            <Link to="/image">Ai Image</Link>
           </li>
           <li className="p-4 hover:text-teal-400 text-gray-300 ">
             <Link to="/video">Ai Video</Link>

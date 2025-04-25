@@ -4,7 +4,9 @@ const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 const upload = require("../utils/multer");
 const OpenAI = require("openai");
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenAI, PersonGeneration } = require("@google/genai");
+
+const { InferenceClient } = require("@huggingface/inference");
 
 const Image = require("../models/Image");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -13,6 +15,8 @@ console.log("ENV KEY:", process.env.OPEN_AI_API_KEY);
 const openAi = new OpenAI({
   apiKey: process.env.OPEN_AI_API_KEY,
 });
+
+const client = new InferenceClient(process.env.HUGGING_FACE);
 
 const genAI = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI });
 router.post("/generate-image", async (req, res) => {
@@ -99,7 +103,6 @@ router.post("/huggingFace", async (req, res) => {
     const buffer = Buffer.from(arrayBuffer);
     const base64 = buffer.toString("base64");
 
-    // Return base64 image data to the frontend
     res.status(200).json({
       imageUrl: `data:image/png;base64,${base64}`,
     });
@@ -108,8 +111,41 @@ router.post("/huggingFace", async (req, res) => {
     res.status(500).json({
       message: "Failed to generate image",
       imageUrl:
-        "https://cdn.pixabay.com/photo/2024/01/29/22/47/ai-generated-8540915_1280.jpg", // fallback
+        "https://cdn.pixabay.com/photo/2024/01/29/22/47/ai-generated-8540915_1280.jpg",
     });
+  }
+});
+
+router.post("/generate-video", async (req, res) => {
+  const { prompt, ratio } = req.body;
+
+  const requestBody = {
+    instances: [{ prompt }],
+    parameters: {
+      aspectRatio: ratio,
+      PersonGeneration: "dont_allow",
+    },
+  };
+});
+
+router.post("/wan-video-gen", async (req, res) => {
+  const { prompt } = req.body;
+  try {
+    console.log(prompt);
+    const result = await client.textToVideo({
+      provider: "fal-ai",
+      model: "Wan-AI/Wan2.1-T2V-14B",
+      inputs: prompt,
+    });
+    console.log(result);
+    const buffer = await result.arrayBuffer();
+
+    res.setHeader("Content-Type", "video/mp4");
+
+    res.status(200).send(Buffer.from(buffer));
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Video generation failed" });
   }
 });
 
@@ -118,7 +154,6 @@ router.post(
   authMiddleware,
   upload.single("image"),
   async (req, res) => {
-    const { theme, creatorName } = req.body;
     const file = req.file;
     if (!file) return res.status(400).json({ message: "No Image file found!" });
     try {
@@ -132,6 +167,7 @@ router.post(
       await image.save();
       res.status;
     } catch (error) {
+      console.log(error);
       res.status(500).json({ message: "Upload Failed!" });
     }
   }

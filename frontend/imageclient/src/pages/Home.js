@@ -29,6 +29,9 @@ const ImageGrid = () => {
           className="rounded-lg w-full h-40 object-cover shadow-lg transition-transform transform hover:scale-105"
         />
       ))}
+      <h3 className="text-center justify-center items-center text-white ">
+        View Creations
+      </h3>
     </div>
   );
 };
@@ -41,6 +44,9 @@ const PromtSection = () => {
   const [selectedPreference, setPreference] = useState("Speed");
   const [prompt, setPrompt] = useState("");
   const { token } = useUser();
+  const { user } = useUser();
+  const [showModel, setShowModel] = useState(false);
+  const [theme, setTheme] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const styleImages = [
@@ -182,6 +188,48 @@ const PromtSection = () => {
       alert(error);
     }
   };
+  const dataURLtoFile = (dataurl, filename) => {
+    const arr = dataurl.split(",");
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    return new File([u8arr], filename, { type: mime });
+  };
+
+  const handlePublish = async () => {
+    if (!theme.trim()) return alert("Please enter a theme");
+
+    try {
+      setIsLoading(true);
+      const file = dataURLtoFile(
+        generatedImage,
+        `${user.name}${theme}generated-image.png`
+      );
+      const formData = new FormData();
+
+      formData.append("image", file);
+      formData.append("theme", theme);
+      formData.append("creatorName", user.name);
+
+      await axios.post(`${serverUrl}/api/images/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      alert("You will receive credits after reveiew process");
+    } catch (error) {
+      alert("Upload Failed, Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className=" w-10/12 lg:max-w-4xl px-4 py-10 mx-auto border border-gray-700 bg-[#0d0613] text-white rounded-3xl shadow-lg mt-6 flex flex-col md:flex-row gap-6 ">
@@ -311,6 +359,9 @@ const PromtSection = () => {
           </div>
         ) : (
           <div>
+            <p className="text-center mb-3 text-lg text-blue-500 bg-clip-text font-semibold">
+              Publish your creations and earn 20 credits
+            </p>
             <img
               src={generatedImage || logo}
               className="max-w-full max-h-80 rounded-md border border-gray-700 shadow"
@@ -321,6 +372,68 @@ const PromtSection = () => {
             >
               Download Image
             </button>
+
+            <button
+              onClick={() => setShowModel(true)}
+              className="ml-3 mt-4 p-2 border border-green-400 text-white rounded-md"
+            >
+              Publish
+            </button>
+            {showModel && (
+              <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+                {isLoading ? (
+                  <div className="text-white text-lg font-medium">
+                    <svg
+                      className="animate-spin h-8 w-8 text-green-400 mx-auto mb-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8H4z"
+                      ></path>
+                    </svg>
+                    Uploading...
+                  </div>
+                ) : (
+                  <div className="bg-gray-900 p-6 rounded-md shadow-lg w-80">
+                    <h2 className="text-xl font-semibold mb-4 text-white">
+                      Enter Theme
+                    </h2>
+                    <input
+                      type="text"
+                      value={theme}
+                      className="w-full p-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+                      onChange={(e) => setTheme(e.target.value)}
+                    />
+                    <div className="flex justify-end mt-4 space-x-2">
+                      <button
+                        onClick={() => setShowModel(false)}
+                        className="px-3 py-1 rounded bg-gray-700 text-white hover:bg-gray-600"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handlePublish}
+                        className="px-3 py-1 rounded bg-green-500 text-white hover:bg-green-600"
+                      >
+                        Upload
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
